@@ -3,4 +3,4 @@
 
 #auto generated files
 /grpc-go-course/calculator/calculatorpb/*.pb.go
-grpc-go-course/greet/greetpb/greet.pb.go
+/grpc-go-course/greet/greetpb/*.pb.go
