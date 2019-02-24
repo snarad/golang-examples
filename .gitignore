@@ -2,4 +2,5 @@
 .vscode/settings.json
 
 #auto generated files
-*.pb.go
+/grpc-go-course/calculator/calculatorpb/*.pb.go
+grpc-go-course/greet/greetpb/greet.pb.go
