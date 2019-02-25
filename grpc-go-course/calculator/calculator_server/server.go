@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net"
 
 	"github.com/snarad/golang-examples/grpc-go-course/calculator/calculatorpb"
@@ -60,6 +61,30 @@ func (*server) ComputeAverage(stream calculatorpb.CalculatorService_ComputeAvera
 		}
 		sum += req.GetNumber()
 		i++
+	}
+}
+
+func (*server) FindMax(stream calculatorpb.CalculatorService_FindMaxServer) error {
+	fmt.Printf("FindMax function was invoked\n")
+	maxNumber := int64(math.MinInt64)
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("Error while recieving client request stream: %v", err)
+		}
+		fmt.Printf("Recieved new number: %v\n", req.GetNumber())
+		number := req.GetNumber()
+		if number > maxNumber {
+			maxNumber = number
+			if err = stream.Send(&calculatorpb.FindMaxResponse{
+				MaxNumber: int64(maxNumber),
+			}); err != nil {
+				log.Fatalf("Error in sending the stream to client: %v", err)
+			}
+		}
 	}
 }
 
