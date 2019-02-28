@@ -13,6 +13,8 @@ import (
 	"github.com/snarad/golang-examples/grpc-go-course/blog/blogpb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var collection *mongo.Collection
@@ -25,6 +27,36 @@ type blogItem struct {
 	AuthorID string             `bson:"author_id"`
 	Content  string             `bson:"content"`
 	Title    string             `bson:"title"`
+}
+
+func (*server) CreateBlog(ctx context.Context, req *blogpb.CreateBlogRequest) (*blogpb.CreateBlogResponse, error) {
+	fmt.Println("CreateBlog got called")
+	blog := req.GetBlog()
+
+	data := blogItem{
+		AuthorID: blog.GetAuthorId(),
+		Content:  blog.GetContent(),
+		Title:    blog.GetTitle(),
+	}
+
+	res, err := collection.InsertOne(context.Background(), data)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, fmt.Sprintf("Internal error: %v", err))
+	}
+
+	oid, ok := res.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, fmt.Sprintf("Internal error: %v", err))
+	}
+
+	return &blogpb.CreateBlogResponse{
+		Blog: &blogpb.Blog{
+			Id:       oid.Hex(),
+			AuthorId: blog.GetAuthorId(),
+			Content:  blog.GetContent(),
+			Title:    blog.GetTitle(),
+		},
+	}, nil
 }
 
 func main() {
